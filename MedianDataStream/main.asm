@@ -23,13 +23,72 @@ push ecx
 ;if (low >= high) {
 ;    return (item > arr[low]) ? (low + 1) : low;
 ;}
+mov ebx,[ebp+16] ; ebx = low
+mov ecx,[ebp+20] ; ecx = high
+cmp ebx,ecx
+jl exitif1
+     mov esi,[ebp+8] ; esi = &array[]
+     lea esi,[esi+ebx*4] ; esi = &array[low];
+     mov eax,[esi] ; eax = arr[low];
+     cmp eax,[ebp+12] ; item > arr[low]
+     jle elseif2_
+     ; if2 body
+     mov eax,ebx
+     inc eax
+     jmp endBinarySearch
+elseif2_:
+    ; elseif2 body
+    mov eax,ebx
+    jmp endBinarySearch      
+exitif1:
 
+     ;mid = (low + high) / 2;
+     mov eax,ebx
+     add eax,ecx
+     shr eax,1 ; eax = (low + high) / 2;
+     mov edx,eax ; save mid in edx
 
+     ;if (item == arr[mid]) {
+     mov esi, eax; esi = mid
+     mov edi,[ebp+8] ; edi = &array[]
+     lea edi,[edi+esi*4] ; edi = &array[mid];
+     mov eax,[edi] ; eax = arr[mid];
+     cmp eax,[ebp+12] ; item == arr[mid]
+     jne exitif3
+     ; if3 body
+     mov eax,esi
+     inc eax
+     jmp endBinarySearch
+exitif3:
 
+;    if (item > arr[mid])
+;        
+     mov esi,edx ; esi = mid
+     mov edi,[ebp+8] ; edi = &array[]
+     lea edi,[edi+esi*4] ; edi = &array[mid];
+     mov eax,[edi] ; eax = arr[mid];
+     cmp [ebp+12],eax ; item > arr[mid]
+     jle exitif4_
+     ; if4 body
+     ; return binarySearch(arr, item, mid + 1, high);
 
+     inc edx ; mid + 1
 
+     push ecx
+     push edx
+     push [ebp+12]
+     push [ebp+8]
+     call binarySearch
+exitif4_:
 
+     dec edx ; mid - 1
+     push edx
+     push ebx
+     push [ebp+12]
+     push [ebp+8]
+     call binarySearch
 
+endBinarySearch:
 ;epilogue
 pop ecx
 pop ebx
